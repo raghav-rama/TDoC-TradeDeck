@@ -3,7 +3,7 @@
 
 ## About the project :
    TradeDeck is a stock market analysis tool in Java with a GUI indicating daily opening and closing figures, different forms of representation like raw and candlestick, and watchlist features.
-## Tech Stach Used :
+## Tech Stacks Used :
 -> Java \
 -> Java Swing, Java awt, Java.awt.geom \
 -> Java.Http.net\
