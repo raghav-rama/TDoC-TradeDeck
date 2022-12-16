@@ -3,24 +3,32 @@ package org.example;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.*;
+import java.io.IOException;
+
 public class Graph extends JPanel {
-  int[] cordX = {40, 82, 144};
-  int[] cordY = {20, 42, 64};
-  int margin = 60;
+//  int[] cordX = {40, 82, 144};
+  double[] cordY = Home.fetch();
+  double[] cordX = new double[cordY.length];
+  double margin = 60;
+
+  public Graph () throws IOException, InterruptedException {}
 
   @Override
   protected void paintComponent(Graphics gph) {
     super.paintComponent(gph);
     Graphics2D graph = (Graphics2D) gph;
-    int height = getHeight();
-    int width = getWidth();
+    double height = getHeight();
+    double width = getWidth();
     graph.draw(new Line2D.Double(margin, height-margin, width-margin, height-margin));
     graph.draw(new Line2D.Double(margin, margin, margin, height-margin));
     graph.setPaint(Color.RED);
+    double counter = 20.0d;
     for (int i=0; i<cordX.length; ++i) {
-      int x = margin + cordX[i];
-      int y = height - margin - cordY[i];
-      graph.fill(new Ellipse2D.Double(x, y, 10, 10));
+      cordX[i] = counter;
+      double x = margin + cordX[i];
+      double y = height - margin - cordY[i];
+      graph.fill(new Ellipse2D.Double(x, y, 5, 5));
+      counter += 5;
     }
   }
 }
