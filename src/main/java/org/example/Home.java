@@ -58,6 +58,7 @@ public class Home {
     searchButton.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed (ActionEvent e) {
+        resetButtons();
         String search = formattedTextField1.getText();
         String url = "https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords="
             + search
@@ -149,7 +150,6 @@ public class Home {
       resultContainer.add(resultButtons[i], gbc);
       resultButtons[i].setText("Button");
     }
-    makeGridBagLayout();
   }
   public void bubbleSort(String[] arr1, float[] arr2) {
     for(int i = 0; i < arr2.length - 1; ++i) {
@@ -169,7 +169,8 @@ public class Home {
     System.out.println(Arrays.toString(arr2));
   }
 
-  void makeGridBagLayout() {
-
+  void resetButtons() {
+    for(int i = 0; i < resultButtons.length; ++i)
+      resultButtons[i].setVisible(false);
   }
 }
