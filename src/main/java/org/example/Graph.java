@@ -7,7 +7,7 @@ import java.io.IOException;
 
 public class Graph extends JPanel {
 //  int[] cordX = {40, 82, 144};
-  double[] cordY = Home.fetch();
+  double[] cordY = new double[100];
   double[] cordX = new double[cordY.length];
   double margin = 60;
 
