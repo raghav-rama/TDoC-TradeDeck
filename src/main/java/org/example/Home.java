@@ -1,18 +1,20 @@
 package org.example;
 
-import java.awt.*;
-import java.awt.List;
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.*;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Arrays;
+import java.util.Set;
 import java.util.stream.DoubleStream;
-
-import org.json.*;
-import org.w3c.dom.ls.LSOutput;
 
 public class Home {
   private JButton button1;
@@ -37,24 +39,10 @@ public class Home {
 
   public Home() {
 
-  button1.addActionListener(new ActionListener() {
-    @Override
-    public void actionPerformed (ActionEvent e) {
-      tabbedPane1.setSelectedIndex(0);
-    }
-  });
-  button3.addActionListener(new ActionListener() {
-    @Override
-    public void actionPerformed (ActionEvent e) {
-      tabbedPane1.setSelectedIndex(1);
-    }
-  });
-  button2.addActionListener(new ActionListener() {
-    @Override
-    public void actionPerformed (ActionEvent e) {
-      tabbedPane1.setSelectedIndex(2);
-    }
-  });
+  button1.addActionListener(e -> tabbedPane1.setSelectedIndex(0));
+  button3.addActionListener(e -> tabbedPane1.setSelectedIndex(1));
+  button2.addActionListener(e -> tabbedPane1.setSelectedIndex(2));
+
     searchButton.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed (ActionEvent e) {
@@ -71,7 +59,7 @@ public class Home {
           JSONObject obj = new JSONObject(response.body());
           JSONArray searchResults = obj.getJSONArray("bestMatches");
           int len = searchResults.length();
-          System.out.println("\nlen: "+len);
+//          System.out.println("\nlen: "+len);
 
           float[] matchScore = new float[len];
           String[] val = new String[len];
@@ -80,6 +68,8 @@ public class Home {
             JSONObject kvObj = new JSONObject(searchResults.get(i).toString());
             matchScore[i] = kvObj.getFloat("9. matchScore");
             val[i] = kvObj.getString("1. symbol") + " (" + kvObj.getString("2. name") + ")";
+            resultButtons[i].setToolTipText(val[i]);
+            val[i] = reduceString(val[i]); // reduce length so button size doesn't overflow
           }
           if(len > 10) {
               len = 10;
@@ -97,14 +87,16 @@ public class Home {
     });
   }
 
-  public static double[] fetch() throws IOException, InterruptedException {
-    String url = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&apikey=XYMD6F46NUUEPLX0";
+  public static double[] fetch(String searchExp) throws IOException, InterruptedException {
+    String url = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=" +
+        searchExp +
+        "&interval=5min&apikey=XYMD6F46NUUEPLX0";
     HttpRequest request = HttpRequest.newBuilder().GET().uri(URI.create(url)).build();
     HttpClient client = HttpClient.newBuilder().build();
     HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
     String info = response.body();
     JSONObject obj = new JSONObject(info);
-//    System.out.println("obj: "+obj);
+    System.out.println("obj: "+obj);
     JSONObject time = obj.getJSONObject("Time Series (5min)");
 //    System.out.println("time: "+time);
     Set<String> keys = time.keySet();
@@ -115,7 +107,7 @@ public class Home {
     for(int i=0;i<close.length;++i)
       close[i] = time.getJSONObject(dates[i]).getString("4. close");
 //    System.out.println("closing val: "+Arrays.toString(close));
-    Arrays.stream(close).flatMapToDouble(e -> DoubleStream.of(Double.parseDouble(e))).forEach(e -> System.out.print(e+" "));
+//    Arrays.stream(close).flatMapToDouble(e -> DoubleStream.of(Double.parseDouble(e))).forEach(e -> System.out.print(e+" "));
     return Arrays.stream(close).mapToDouble(Double::parseDouble).toArray();
   }
 
@@ -125,7 +117,6 @@ public class Home {
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     frame.pack();
     frame.setVisible(true);
-    fetch();
 
   }
 
@@ -148,8 +139,30 @@ public class Home {
       gbc.gridx=0;
       gbc.gridy=i;
       resultContainer.add(resultButtons[i], gbc);
-      resultButtons[i].setText("Button");
+      resultButtons[i].setText("...");
+      int finalI = i;
+      resultButtons[i].addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed (ActionEvent e) {
+          try {
+            tabbedPane1.setSelectedIndex(1);
+            tabbedPane2.setSelectedIndex(1);
+            String buf = resultButtons[finalI].getText();
+
+            buf = buf.substring(0, buf.indexOf('(')-1);
+            System.out.println(buf);
+            graph1.cordY = fetch(buf);
+
+
+          } catch (IOException | InterruptedException ex) {
+            System.err.println();
+          }
+//          JOptionPane.showMessageDialog(null, "Hello World! "+ finalI);
+        }
+      });
     }
+
+
   }
   public void bubbleSort(String[] arr1, float[] arr2) {
     for(int i = 0; i < arr2.length - 1; ++i) {
@@ -165,12 +178,23 @@ public class Home {
         }
       }
     }
-    System.out.println(Arrays.toString(arr1));
-    System.out.println(Arrays.toString(arr2));
+//    System.out.println(Arrays.toString(arr1));
+//    System.out.println(Arrays.toString(arr2));
   }
 
   void resetButtons() {
     for(int i = 0; i < resultButtons.length; ++i)
       resultButtons[i].setVisible(false);
   }
+
+  String reduceString(String s) {
+    if(s.length() > 36) {
+      return s.substring(0, 33) + "...";
+    } else {
+      return s;
+    }
+
+  }
+
+
 }
