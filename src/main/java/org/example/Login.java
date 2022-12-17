@@ -1,7 +1,6 @@
 package org.example;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -24,17 +23,17 @@ public class Login {
   private JButton forgetPasswordButton;
   private JPanel spacer2;
 
-  public Login() {
+  public Login () {
 //  panelMain.setBackground(Color.CYAN);
 //  panelMain.setBounds(0, 0, 500, 500);
-  button_msg.addActionListener(new ActionListener() {
-    @Override
-    public void actionPerformed (ActionEvent e) {
-      JOptionPane.showMessageDialog(null, "Hello World!");
-    }
-  });
+    button_msg.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed (ActionEvent e) {
+        JOptionPane.showMessageDialog(null, "Hello World!");
+      }
+    });
 
-}
+  }
 
   public static void main (String[] args) {
     JFrame frame = new JFrame("Login");
