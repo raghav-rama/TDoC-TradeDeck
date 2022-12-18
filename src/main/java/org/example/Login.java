@@ -21,7 +21,6 @@ public class Login {
   private JLabel descLabel;
   private JLabel spacer;
   private JButton forgetPasswordButton;
-  private JPanel spacer2;
 
   public Login () {
 //  panelMain.setBackground(Color.CYAN);

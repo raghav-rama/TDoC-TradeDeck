@@ -7,7 +7,7 @@ import java.io.IOException;
 
 public class Graph extends JPanel {
 //  int[] cordX = {40, 82, 144};
-  double[] cordY = new double[100];
+  double[] cordY = Home.close;
   double[] cordX = new double[cordY.length];
   double margin = 60;
 
@@ -22,7 +22,7 @@ public class Graph extends JPanel {
     graph.draw(new Line2D.Double(margin, height-margin, width-margin, height-margin));
     graph.draw(new Line2D.Double(margin, margin, margin, height-margin));
     graph.setPaint(Color.RED);
-    double counter = 20.0d;
+    int counter = 20;
     for (int i=0; i<cordX.length; ++i) {
       cordX[i] = counter;
       double x = margin + cordX[i];

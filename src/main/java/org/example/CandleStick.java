@@ -5,11 +5,11 @@ import javax.swing.*;
 import java.awt.geom.*;
 
 public class CandleStick extends JComponent {
-  int[] cordX={80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320};
-  int[] high={200, 175, 160, 160, 170, 100, 170, 180, 180, 100, 200, 170, 70};
-  int[] open={125, 150, 150, 150, 160, 80, 50, 50, 55, 90, 80, 70, 60};
-  int[] close={175, 70, 80, 125, 145, 40, 150, 160, 165, 60, 180, 150, 50};
-  int[] low={100, 50, 60, 120, 140, 20, 40, 40, 45, 55, 70, 60, 20};
+  double[] cordX=Home.cordX;
+  double[] high=Home.high;
+  double[] open=Home.open;
+  double[] close=Home.close;
+  double[] low=Home.low;
   int margin = 60;
   @Override
   protected void paintComponent(Graphics gph) {
@@ -30,20 +30,25 @@ public class CandleStick extends JComponent {
       counter+=20;
     }
     for(int i = 0; i < cordX.length; ++i) {
+      open[i] = map(open[i], 86, 88, margin, height-margin);
+      close[i] = map(close[i], 86, 88, margin, height-margin);
+      low[i] = map(low[i], 86, 88, margin, height-margin);
+      high[i] = map(high[i], 86, 88, margin, height-margin);
       if(open[i] <= close[i]) {
         graph.setPaint(Color.green);
         graph.draw(new Line2D.Double(margin+cordX[i], height-margin-low[i], margin+cordX[i], height-margin-open[i]));
-        graph.fillRect(margin+cordX[i]-5, height-margin-close[i],10, close[i]-open[i]);
+        graph.fillRect(margin+(int)cordX[i]-4, height-margin-(int)close[i],5, (int)(close[i]-open[i]));
         graph.draw(new Line2D.Double(margin+cordX[i], height-margin-close[i], margin+cordX[i], height-margin-high[i]));
-
       } else if (open[i] > close[i]) {
         graph.setColor(Color.red);
         graph.draw(new Line2D.Double(margin+cordX[i], height-margin-low[i], margin+cordX[i], height-margin-close[i]));
-        graph.fillRect(margin+cordX[i]-5, height-margin-open[i],10, open[i]-close[i]);
+        graph.fillRect(margin+(int)cordX[i]-5, height-margin-(int)open[i],5, (int)(open[i]-close[i]));
         graph.draw(new Line2D.Double(margin+cordX[i], height-margin-open[i], margin+cordX[i], height-margin-high[i]));
       }
-
     }
+  }
+  double map(double x, double in_min, double in_max, double out_min, double out_max) {
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
   }
 
 }

@@ -14,9 +14,15 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Arrays;
 import java.util.Set;
-import java.util.stream.DoubleStream;
 
 public class Home {
+  static double[] open = new double[100];
+  static double[] close = new double[100];
+  static double[] low = new double[100];
+  static double[] high = new double[100];
+  static double[] cordX = new double[100];
+
+  final int margin = 60;
   private JButton button1;
   private JButton button2;
   private JButton button3;
@@ -87,7 +93,7 @@ public class Home {
     });
   }
 
-  public static double[] fetch(String searchExp) throws IOException, InterruptedException {
+  public static void fetch(String searchExp) throws IOException, InterruptedException {
     String url = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=" +
         searchExp +
         "&interval=5min&apikey=XYMD6F46NUUEPLX0";
@@ -103,12 +109,27 @@ public class Home {
     String[] dates = keys.toArray(new String[0]);
     Arrays.sort(dates);
 //    System.out.println("dates: "+ Arrays.toString(dates));
-    String[] close = new String[keys.size()];
-    for(int i=0;i<close.length;++i)
-      close[i] = time.getJSONObject(dates[i]).getString("4. close");
-//    System.out.println("closing val: "+Arrays.toString(close));
-//    Arrays.stream(close).flatMapToDouble(e -> DoubleStream.of(Double.parseDouble(e))).forEach(e -> System.out.print(e+" "));
-    return Arrays.stream(close).mapToDouble(Double::parseDouble).toArray();
+//    String[] close = new String[keys.size()];
+//    String[] open = new String[keys.size()];
+//    String[] low = new String[keys.size()];
+//    String[] high = new String[keys.size()];
+    double counter = 20.0d;
+    for(int i = 0; i< close.length; ++i) {
+      close[i] = Double.parseDouble(time.getJSONObject(dates[i]).getString("4. close"));
+      open[i] = Double.parseDouble(time.getJSONObject(dates[i]).getString("1. open"));
+      low[i] = Double.parseDouble(time.getJSONObject(dates[i]).getString("3. low"));
+      high[i] = Double.parseDouble(time.getJSONObject(dates[i]).getString("2. high"));
+      cordX[i] = counter;
+      counter += 7.0;
+    }
+//    Arrays.stream(low).map(operand -> )
+
+//    System.out.println("closing val: "+Arrays.toString(close1));
+//    Arrays.stream(close1).flatMapToDouble(e -> DoubleStream.of(Double.parseDouble(e))).forEach(e -> System.out.print(e+" "));
+//    close = Arrays.stream(close1).mapToInt(Integer::parseInt).toArray();
+//    open = Arrays.stream(open1).mapToInt(Integer::parseInt).toArray();
+//    high = Arrays.stream(high1).mapToInt(Integer::parseInt).toArray();
+//    low = Arrays.stream(low1).mapToInt(Integer::parseInt).toArray();
   }
 
   public static void main (String[] args) throws IOException, InterruptedException {
@@ -148,12 +169,10 @@ public class Home {
             tabbedPane1.setSelectedIndex(1);
             tabbedPane2.setSelectedIndex(1);
             String buf = resultButtons[finalI].getText();
-
             buf = buf.substring(0, buf.indexOf('(')-1);
             System.out.println(buf);
-            graph1.cordY = fetch(buf);
-
-
+            fetch(buf);
+            System.out.println(Arrays.toString(cordX));
           } catch (IOException | InterruptedException ex) {
             System.err.println();
           }
@@ -196,5 +215,14 @@ public class Home {
 
   }
 
+  double findSmallest() {
+    return Arrays.stream(low).min().getAsDouble();
+  }
+  double findGreatest() {
+    return Arrays.stream(high).max().getAsDouble();
+  }
 
+  double map(double x, double in_min, double in_max, double out_min, double out_max) {
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+  }
 }
