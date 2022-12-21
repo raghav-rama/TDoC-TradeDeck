@@ -2,17 +2,12 @@ package org.example;
 
 import javax.swing.*;
 import javax.swing.text.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.awt.event.*;
+import java.security.*;
+import java.sql.*;
+import java.util.logging.*;
 
-public class Register {
+public class Register extends JComponent {
   private JPanel panelMain;
   private JPanel imageContainer;
   private JPanel registerDetails;
@@ -33,17 +28,12 @@ public class Register {
   private JPasswordField password;
   private JPasswordField cnfPassword;
   private JButton registerButton;
+  private JButton alreadyAUserButton;
+  public static Main main;
+
 
   Register() throws BadLocationException {
-    textPane1.setFont(new Font("Castellar", Font.BOLD, 32));
-    textPane1.setText("TradeDeck.");
-//    SimpleAttributeSet attributeSet = new SimpleAttributeSet();
-//    StyleConstants.setItalic(attributeSet, true);
-//    textPane1.setCharacterAttributes(attributeSet, true);
-    StyledDocument doc = textPane1.getStyledDocument();
-    Style myStyle = textPane1.addStyle("", null);
-//    StyleConstants.setFontSize(myStyle, 18);
-    doc.insertString(doc.getLength(), "\nGet Started for free!", myStyle);
+    setTextToPane();
     registerButton.addActionListener(new ActionListener() {
       @Override
       public void actionPerformed (ActionEvent e) {
@@ -63,12 +53,20 @@ public class Register {
             ps = SQLConnection.getConnection().prepareStatement(query);
             if (ps.executeUpdate() > 0) {
               JOptionPane.showMessageDialog(null, "Account Created Successfully");
+              UserDetails.name = _username;
+              main.getTabbedPane1().setSelectedIndex(1);
             }
           } catch (SQLException | ClassNotFoundException ex) {
             Logger.getLogger(Register.class.getName()).log(Level.SEVERE, null, ex);
             System.err.println();
           }
         }
+      }
+    });
+    alreadyAUserButton.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed (ActionEvent e) {
+        main.getTabbedPane1().setSelectedIndex(1);
       }
     });
   }
@@ -90,11 +88,31 @@ public class Register {
     }
   }
 
-  public static void main (String[] args) throws BadLocationException {
-    JFrame frame = new JFrame("Register");
-    frame.setContentPane(new Register().panelMain);
-    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    frame.pack();
-    frame.setVisible(true);
+  public void setTextToPane() {
+    nameTextPane.setContentType("text/html");
+    nameTextPane.setText(HTMLStringCodes.nameTextPaneString);
+
+    usernameTextPane.setContentType("text/html");
+    usernameTextPane.setText(HTMLStringCodes.userNamePaneString);
+
+    eMailTextPane.setContentType("text/html");
+    eMailTextPane.setText(HTMLStringCodes.eMailTextPaneString);
+
+    passwordTextPane.setContentType("text/html");
+    passwordTextPane.setText(HTMLStringCodes.passwordTextPaneString);
+
+    confirmPasswordTextPane.setContentType("text/html");
+    confirmPasswordTextPane.setText(HTMLStringCodes.confirmPasswordTextPaneString);
+
+    textPane1.setContentType("text/html");
+    textPane1.setText(HTMLStringCodes.textPane1String);
   }
+
+//  public static void main (String[] args) throws BadLocationException {
+//    JFrame frame = new JFrame("Register");
+//    frame.setContentPane(new Register().panelMain);
+//    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//    frame.pack();
+//    frame.setVisible(true);
+//  }
 }

@@ -19,6 +19,8 @@ public class CandleStick extends JComponent {
     int width = getWidth();
     graph.draw(new Line2D.Double(margin, height-margin, width-margin-50, height-margin));
     graph.draw(new Line2D.Double(margin, margin, margin, height-margin));
+    double lowest = Home.findSmallest();
+    double highest = Home.findGreatest();
     int counter = 0;
     for (int i = 0; i <= 20; ++i) {
       graph.draw(new Line2D.Double(margin+counter, margin+50, margin+counter, height-margin));//y-axis
@@ -30,10 +32,10 @@ public class CandleStick extends JComponent {
       counter+=20;
     }
     for(int i = 0; i < cordX.length; ++i) {
-      open[i] = map(open[i], 86, 88, margin, height-margin);
-      close[i] = map(close[i], 86, 88, margin, height-margin);
-      low[i] = map(low[i], 86, 88, margin, height-margin);
-      high[i] = map(high[i], 86, 88, margin, height-margin);
+      open[i] = map(open[i], lowest, highest, margin, height-margin);
+      close[i] = map(close[i], lowest, highest, margin, height-margin);
+      low[i] = map(low[i], lowest, highest, margin, height-margin);
+      high[i] = map(high[i], lowest, highest, margin, height-margin);
       if(open[i] <= close[i]) {
         graph.setPaint(Color.green);
         graph.draw(new Line2D.Double(margin+cordX[i], height-margin-low[i], margin+cordX[i], height-margin-open[i]));

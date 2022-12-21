@@ -1,26 +1,28 @@
 package org.example;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.json.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.util.Arrays;
-import java.util.Set;
+import java.net.http.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class Home {
+public class Home extends JComponent {
   static double[] open = new double[100];
   static double[] close = new double[100];
   static double[] low = new double[100];
   static double[] high = new double[100];
   static double[] cordX = new double[100];
+  public static Main main;
+
 
   final int margin = 60;
   private JButton button1;
@@ -41,13 +43,18 @@ public class Home {
   private JFormattedTextField formattedTextField1;
   private JButton searchButton;
   private JPanel resultContainer;
+  private JButton button4;
+  private JPanel graph;
+  private JButton addToWatchListButton;
   private JButton[] resultButtons;
 
   public Home() {
+    refreshUI();
+    Login.home = this;
 
-  button1.addActionListener(e -> tabbedPane1.setSelectedIndex(0));
-  button3.addActionListener(e -> tabbedPane1.setSelectedIndex(1));
-  button2.addActionListener(e -> tabbedPane1.setSelectedIndex(2));
+    button1.addActionListener(e -> tabbedPane1.setSelectedIndex(0));
+    button3.addActionListener(e -> tabbedPane1.setSelectedIndex(1));
+    button2.addActionListener(e -> tabbedPane1.setSelectedIndex(2));
 
     searchButton.addActionListener(new ActionListener() {
       @Override
@@ -91,6 +98,21 @@ public class Home {
         }
       }
     });
+    button4.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed (ActionEvent e) {
+        main.getTabbedPane1().setSelectedIndex(1);
+        UserDetails.name = null;
+        refreshUI();
+      }
+    });
+    addToWatchListButton.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed (ActionEvent e) {
+        updateWatchList();
+
+      }
+    });
   }
 
   public static void fetch(String searchExp) throws IOException, InterruptedException {
@@ -132,14 +154,14 @@ public class Home {
 //    low = Arrays.stream(low1).mapToInt(Integer::parseInt).toArray();
   }
 
-  public static void main (String[] args) throws IOException, InterruptedException {
-    JFrame frame = new JFrame("Home");
-    frame.setContentPane(new Home().panelMain);
-    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    frame.pack();
-    frame.setVisible(true);
-
-  }
+//  public static void main (String[] args) throws IOException, InterruptedException {
+//    JFrame frame = new JFrame("Home");
+//    frame.setContentPane(new Home().panelMain);
+//    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//    frame.pack();
+//    frame.setVisible(true);
+//
+//  }
 
   private void createUIComponents() {
     candleStick1 = new CandleStick();
@@ -167,12 +189,13 @@ public class Home {
         public void actionPerformed (ActionEvent e) {
           try {
             tabbedPane1.setSelectedIndex(1);
-            tabbedPane2.setSelectedIndex(1);
+            tabbedPane2.setSelectedIndex(0);
             String buf = resultButtons[finalI].getText();
             buf = buf.substring(0, buf.indexOf('(')-1);
-            System.out.println(buf);
+            UserDetails.symbol = buf;
+//            System.out.println(buf);
             fetch(buf);
-            System.out.println(Arrays.toString(cordX));
+//            System.out.println(Arrays.toString(cordX));
           } catch (IOException | InterruptedException ex) {
             System.err.println();
           }
@@ -183,6 +206,36 @@ public class Home {
 
 
   }
+
+  public void updateWatchList() {
+    PreparedStatement ps;
+    String query = "INSERT INTO Watchlist VALUES('"+UserDetails.name+"','"+UserDetails.symbol+"');";
+    try {
+      ps = SQLConnection.getConnection().prepareStatement(query);
+      if(ps.executeUpdate() > 0) {
+        JOptionPane.showMessageDialog(null, "Added to watchlist");
+      } else {
+        JOptionPane.showMessageDialog(null, "Failed to add to watchlist");
+      }
+    } catch(SQLException | ClassNotFoundException ex) {
+      Logger.getLogger(Register.class.getName()).log(Level.SEVERE, null, ex);
+      System.err.println();
+    }
+  }
+
+  public void getWatchList() throws ClassNotFoundException, SQLException {
+    UserDetails.watchlist.clear();
+    PreparedStatement ps;
+    ResultSet rs;
+    String query = "SELECT * FROM Watchlist WHERE Username='"+UserDetails.name+"';";
+    ps = SQLConnection.getConnection().prepareStatement(query);
+    rs = ps.executeQuery();
+    while(rs.next()) {
+      UserDetails.watchlist.add(rs.getString("Stocks"));
+    }
+  }
+
+
   public void bubbleSort(String[] arr1, float[] arr2) {
     for(int i = 0; i < arr2.length - 1; ++i) {
       for (int j = 0; j < arr2.length -1 -i; ++i) {
@@ -212,17 +265,24 @@ public class Home {
     } else {
       return s;
     }
-
   }
 
-  double findSmallest() {
+  public static double findSmallest () {
     return Arrays.stream(low).min().getAsDouble();
   }
-  double findGreatest() {
+  public static double findGreatest() {
     return Arrays.stream(high).max().getAsDouble();
   }
 
   double map(double x, double in_min, double in_max, double out_min, double out_max) {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+  }
+
+  public void refreshUI() {
+    if(UserDetails.name == null) {
+      tradeDeck.setText("Not Logged In");
+    } else {
+      tradeDeck.setText(UserDetails.name+", Welcome to TradeDeck");
+    }
   }
 }
